@@ -10,7 +10,7 @@ In the screenshot below you can see the flight path (red to green, based on heig
 
 
 ## Screenshot
-![Showing the flight path and the path where the weak link will fall in the browser]("Screen Shot 2018-05-18 at 11.44.21 AM.png")
+![Showing the flight path and the path where the weak link will fall in the browser]('Screen Shot 2018-05-18 at 11.44.21 AM.png')
 
 
 ## Usage
