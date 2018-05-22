@@ -8,5 +8,10 @@ By combining several forces (wind / aircraft speed) it is possible to approximat
 
 In the screenshot below you can see the flight path (red to green, based on height) and the path where the weak link will fall when disconnected (blue).
 
+
 ## Screenshot
 ![Showing the flight path and the path where the weak link will fall in the browser](Screen Shot 2018-05-18 at 11.44.21 AM.png)
+
+
+## Usage
+Given that this is just a proof of concept the JSON file containing the flight path is added in the data folder and it's path is hardcoded in the application. In order to run the application please restore the node dependencies first with `node install`.
