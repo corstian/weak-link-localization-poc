@@ -1,12 +1,12 @@
 function calculatePosition(height, speed, heading, climbrate, currentLocation) {
   var gravitation = 9.81;
-  var mass = $('#wl_mass')[0].value;                      // kg
-  var length = $('#wl_length')[0].value;                  // m
-  var radius = $('#wl_radius')[0].value;                  // m
-  var density = $('#a_density')[0].value;                 // rho
-  var windSpeed = $('#w_speed')[0].value;                 // m/s
-  var fieldElevation = parseFloat($('#f_elevation')[0].value);      // ft
-  var windHeading = parseFloat($('#w_heading')[0].value);          // degrees
+  var mass = $('#wl_mass')[0].value;                            // kg
+  var length = $('#wl_length')[0].value;                        // m
+  var radius = $('#wl_radius')[0].value;                        // m
+  var density = $('#a_density')[0].value;                       // rho
+  var windSpeed = $('#w_speed')[0].value;                       // m/s
+  var fieldElevation = parseFloat($('#f_elevation')[0].value);  // ft
+  var windHeading = parseFloat($('#w_heading')[0].value);       // degrees
   var dragCoefficient = $('#dragCoefficient')[0].value;
   
   var speed_aircraft = {
@@ -28,9 +28,7 @@ function calculatePosition(height, speed, heading, climbrate, currentLocation) {
     y : 0
   }
 
-  var dt = 0.1;
-
-  console.log('height = ' + cHeight);
+  var dt = .001;
 
   while(cHeight > fieldElevation){
     var Fz = {
@@ -80,10 +78,7 @@ function calculatePosition(height, speed, heading, climbrate, currentLocation) {
   var distance = Math.sqrt(Math.pow(dist.x, 2) + Math.pow(dist.y, 2));
   var heading = Math.atan2(dist.x, dist.y) * 180 / Math.PI;
   
-  console.log(currentLocation, heading, dist.x, dist.y);
-
   return L.GeometryUtil.destination(currentLocation, heading, distance);
-  // ToDo: Now calculate the deceleration of the weak link caused by disconnection of the aircraft
 }
 
 var map, featureList, boroughSearch = [], theaterSearch = [], museumSearch = [];
@@ -177,58 +172,74 @@ map = L.map("map", {
 });
 
 
-  $.getJSON("data/flight.json", function (data) {
-    var top = 0;
-    var heighestDataIndex = 0;
-    
-    for (var i = 0; i < data.length; i++) {
-      if (top < data[i].altitude){
-        top = data[i].altitude;
-        heighestDataIndex = i;
-      }
+$.getJSON("data/flight.json", function (data) {
+  var top = 0;
+  var heighestDataIndex = 0;
+
+  // Find the highest point of the flight
+  for (var i = 0; i < data.length; i++) {
+    if (top < data[i].altitude){
+      top = data[i].altitude;
+      heighestDataIndex = i;
     }
+  }
 
-    var points = [];
-    
-    var num = parseFloat($('#datapoints')[0].value);
-    
-    for (var i = data.length - 1; i > 0; i--) {
-      var currentLocation = new L.LatLng(data[i].location.lat, data[i].location.lng);
-      var polyline = new L.polyline([
-        new L.LatLng(data[i - 1].location.lat, data[i-1].location.lng),
-        currentLocation
-      ], {
-        color: getColor(1-(data[i].altitude/top)),
-        weight: 5,
-        opacity: 1,
-        smoothFactor: 1
-      });
-    
-      polyline.addTo(map);
-    }
-
-    console.log("heighest Index = " + heighestDataIndex + ", height = " + data[heighestDataIndex].altitude + ", top = " + top);
-
-    var location = new L.LatLng(data[heighestDataIndex].location.lat, data[heighestDataIndex].location.lng);
-
-    var beginCircle = new L.circleMarker(location, {
-      color: 'red',
-      radius : 10
+  var points = [];
+  
+  var num = parseFloat($('#datapoints')[0].value);
+  console.log("loop");
+  // Draw the course from the aircraft
+  for (var i = data.length - 1; i > 0; i--) {
+    var currentLocation = new L.LatLng(data[i].location.lat, data[i].location.lng);
+    var polyline = new L.polyline([
+      new L.LatLng(data[i - 1].location.lat, data[i-1].location.lng),
+      currentLocation
+    ], {
+      color: getColor(1-(data[i].altitude/top)),
+      weight: 5,
+      opacity: 1,
+      smoothFactor: 1
     });
+  
+    polyline.addTo(map);
+    
+    var position = calculatePosition(data[i].altitude * 0.3048, data[i].speed * 0.514444444, data[i].heading, data[i].climbrate , new L.LatLng(data[i].location.lat, data[i].location.lng));
+    
+    if (i >= data.length - num) points.push(position);
+  }
 
-    beginCircle.addTo(map);
+  // console.log("heighest Index = " + heighestDataIndex + ", height = " + data[heighestDataIndex].altitude + ", top = " + top);
 
-
-    var point = calculatePosition(data[heighestDataIndex].altitude * 0.304, data[heighestDataIndex].speed * 0.514444444, data[heighestDataIndex].heading, data[heighestDataIndex].climbrate , location);
-
-    var circle = new L.circleMarker(point, {
-      color: 'dodgerblue',
-      radius : 30
-    });
-
-    circle.addTo(map);
+  // Draw a circle where it probably broke
+  var location = new L.LatLng(data[heighestDataIndex].location.lat, data[heighestDataIndex].location.lng);
+  var beginCircle = new L.circleMarker(location, {
+    color: 'red',
+    radius : 10
   });
 
+  beginCircle.addTo(map);
+
+  
+  var point = calculatePosition(data[heighestDataIndex].altitude * 0.3048, data[heighestDataIndex].speed * 0.514444444, data[heighestDataIndex].heading, data[heighestDataIndex].climbrate , location);
+
+  var circle = new L.circleMarker(point, {
+    color: 'dodgerblue',
+    radius : 30
+  });
+
+  circle.addTo(map);
+
+  var walkPolyline = new L.polyline(points, {
+    color: 'dodgerblue',
+    weight: 3,
+    opacity: 1,
+    smoothFactor: 1
+  });
+
+  walkPolyline.addTo(map);
+});
+
+  
 
 /* Clear feature highlight when map is clicked */
 map.on("click", function(e) {
