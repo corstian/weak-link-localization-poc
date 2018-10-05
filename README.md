@@ -8,7 +8,7 @@ By combining several forces (wind / aircraft speed) it is possible to approximat
 
 In the screenshot below you can see the flight path (red to green, based on height) and the path where the weak link will fall when disconnected (blue).
 
-[Find the interactive proof of concept here.](https://corstian.github.io/weak-link-localization-poc/index.html)
+[Find the interactive proof of concept here.](https://wbac.github.io/weak-link-localization-poc/index.html)
 
 ## Screenshot
 ![Showing the flight path and the path where the weak link will fall in the browser](screenshot.png)
